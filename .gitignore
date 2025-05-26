@@ -1,0 +1,34 @@
+# Docker artifacts
+*.tar
+*.img
+*.log
+cache/
+tmp/
+
+# Environment files (NEVER commit secrets)
+.env
+.env.*
+
+# Editor/project config
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS junk files
+.DS_Store
+Thumbs.db
+
+# Python (if any containers or scripts use it)
+__pycache__/
+*.pyc
+
+# Node.js (if any container builds use it)
+node_modules/
+dist/
+build/
+
+# Test and diagnostics output
+*.out
+*.err
+coverage/

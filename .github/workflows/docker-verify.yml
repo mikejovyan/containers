@@ -1,0 +1,52 @@
+name: Verify Docker Builds (PR)
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify-docker-builds:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed apps
+        id: changes
+        run: |
+          apps=$(git diff --name-only origin/main...HEAD | grep '^apps/' | cut -d/ -f2 | sort -u)
+          apps=$(echo "$apps" | xargs)
+          echo "Changed apps: $apps"
+          echo "apps=$apps" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GitHub Container Registry (GHCR)
+        uses: docker/login-action@v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker images for changed apps (no push)
+        run: |
+          apps="${{ steps.changes.outputs.apps }}"
+
+          if [ -z "$apps" ]; then
+            echo "No app changes detected. Skipping build."
+            exit 0
+          fi
+
+          for app in $apps; do
+            path="apps/$app"
+            if [ -f "$path/Dockerfile" ]; then
+              echo "Building image for $app"
+              docker build -t "ghcr.io/${{ github.repository_owner }}/$app:pr-test" "$path"
+            else
+              echo "Skipping $app — no Dockerfile found"
+            fi
+          done

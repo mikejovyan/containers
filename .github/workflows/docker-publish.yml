@@ -1,0 +1,69 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 3 * * 1'  # Every Monday at 03:00 UTC
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Show trigger type
+        run: echo "Triggered by ${{ github.event_name }}"
+
+      - name: Determine apps to build
+        id: changes
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "Build scheduled — will build all apps."
+            apps=$(ls -1 apps)
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            echo "Push to main — detecting changed apps."
+            apps=$(git diff --name-only HEAD^ HEAD | grep '^apps/' | cut -d/ -f2 | sort -u)
+          else
+            apps=""
+          fi
+
+          apps=$(echo "$apps" | xargs)
+          echo "Apps to build: $apps"
+          echo "apps=$apps" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GitHub Container Registry (GHCR)
+        uses: docker/login-action@v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push selected app containers
+        run: |
+          apps="${{ steps.changes.outputs.apps }}"
+
+          if [ -z "$apps" ]; then
+            echo "No apps to build. Exiting."
+            exit 0
+          fi
+
+          for app in $apps; do
+            path="apps/$app"
+            if [ -f "$path/Dockerfile" ]; then
+              image="ghcr.io/${{ github.repository_owner }}/$app:latest"
+              echo "Building and pushing $image"
+              docker build -t "$image" "$path"
+              docker push "$image"
+            else
+              echo "Skipping $app — no Dockerfile found"
+            fi
+          done
