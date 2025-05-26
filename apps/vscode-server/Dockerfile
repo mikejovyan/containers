@@ -49,6 +49,7 @@ RUN \
   && wget --progress=dot:giga -O /tmp/bin/Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh" \
   && sh /tmp/bin/Miniforge3.sh -b -p "$CONDA_DIR" \
   && rm /tmp/bin/Miniforge3.sh \
+  && echo 'eval "$(/opt/conda/bin/conda shell.bash hook)"' >> /root/.bashrc \
   && mamba list --full-name 'python' | awk 'END{sub("[^.]*$", "*", $2); print $1 " " $2}' >> "${CONDA_DIR}/conda-meta/pinned" \
   && mamba clean --all -f -y \
   && chown -R coder:coder $CONDA_DIR
