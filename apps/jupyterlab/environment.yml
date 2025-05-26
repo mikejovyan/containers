@@ -1,0 +1,50 @@
+name: base
+channels:
+  - conda-forge
+dependencies:
+  # - altair
+  # - beautifulsoup4
+  - black
+  - blas=*=mkl
+  # - bokeh
+  - bottleneck
+  # - catboost=*=*cpu*
+  - category_encoders
+  # - cloudpickle
+  # - cython
+  # - dask
+  # - dill
+  # - h5py
+  - ipympl
+  - ipywidgets
+  - isort
+  - jupyter-ai
+  - jupyterlab-git
+  - jupyterlab_code_formatter
+  - kaggle
+  - lightgbm
+  - matplotlib-base
+  # - numba
+  - numexpr
+  # - openpyxl
+  - pandas
+  - patsy
+  - pip
+  # - protobuf
+  - py-xgboost-cpu
+  # - pytables
+  # - scikit-image
+  - scikit-learn=1.5.2
+  # - scikit-learn-intelex
+  - scipy
+  - seaborn
+  - sqlalchemy
+  - statsmodels
+  # - sympy
+  - widgetsnbextension
+  # - xlrd
+
+  # Optional pip packages
+  # - pip
+  # - pip:
+  #     - some-pip-only-package
