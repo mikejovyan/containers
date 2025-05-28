@@ -65,6 +65,9 @@ RUN \
   # mute sudo warning
   touch /home/coder/.sudo_as_admin_successful \
 
+  # create config folder
+  && mkdir -p /home/coder/.config \
+
   # # install environment
   && echo 'eval "$(/opt/conda/bin/conda shell.bash hook)"' >> /home/coder/.bashrc \
   && mamba env update --prefix=$CONDA_DIR --file=/tmp/environment.yml \
