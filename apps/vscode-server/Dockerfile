@@ -66,7 +66,7 @@ RUN \
   touch /home/coder/.sudo_as_admin_successful \
 
   # create config folder
-  && -p /home/coder/.config \
+  && mkdir -p /home/coder/.config \
 
   # # install environment
   && echo 'eval "$(/opt/conda/bin/conda shell.bash hook)"' >> /home/coder/.bashrc \
