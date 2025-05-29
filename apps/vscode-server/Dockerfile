@@ -12,7 +12,7 @@ ENV USER=coder \
 RUN \
   # tools & required packages
   apt-get update && export DEBIAN_FRONTEND=noninteractive && apt-get install -y --no-install-recommends \
-  	bzip2 ca-certificates curl git sudo tini wget \
+  	bzip2 ca-certificates curl git sudo tini unzip wget \
 
   # clean up
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* \
