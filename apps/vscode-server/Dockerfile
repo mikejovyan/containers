@@ -55,6 +55,8 @@ RUN \
   
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
+ 
+COPY --chown=coder:coder environment.yml /tmp/
 
 USER coder
 WORKDIR /home/coder
@@ -66,8 +68,10 @@ RUN \
   # create config folder
   && mkdir -p /home/coder/.config \
 
-  # install environment
+  # # install environment
   && echo 'eval "$(/opt/conda/bin/conda shell.bash hook)"' >> /home/coder/.bashrc \
-  && mamba clean --all -f -y
+  && mamba env update --prefix=$CONDA_DIR --file=/tmp/environment.yml \
+  && mamba clean --all -f -y \
+  && rm /tmp/environment.yml
 
 ENTRYPOINT ["tini", "--", "/usr/local/bin/entrypoint.sh"]
