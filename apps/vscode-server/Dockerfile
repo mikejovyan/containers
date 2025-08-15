@@ -68,6 +68,6 @@ RUN \
 
   # install environment
   && echo 'eval "$(/opt/conda/bin/conda shell.bash hook)"' >> /home/coder/.bashrc \
-  && mamba clean --all -f -y \
+  && mamba clean --all -f -y
 
 ENTRYPOINT ["tini", "--", "/usr/local/bin/entrypoint.sh"]
