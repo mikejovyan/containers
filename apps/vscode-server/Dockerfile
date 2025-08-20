@@ -72,6 +72,9 @@ RUN \
   && echo 'eval "$(/opt/conda/bin/conda shell.bash hook)"' >> /home/coder/.bashrc \
   && mamba env update --prefix=$CONDA_DIR --file=/tmp/environment.yml \
   && mamba clean --all -f -y \
-  && rm /tmp/environment.yml
+  && rm /tmp/environment.yml \
+  
+  # add claude code
+  && curl -fsSL https://claude.ai/install.sh | bash
 
 ENTRYPOINT ["tini", "--", "/usr/local/bin/entrypoint.sh"]
