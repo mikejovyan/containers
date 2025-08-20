@@ -7,7 +7,7 @@ ARG VSCODE_VERSION=latest
 ENV USER=coder \
     CODE_DIR=/opt/code \
     CONDA_DIR=/opt/conda \
-    PATH=/opt/conda/bin:$PATH
+    PATH=/home/coder/.local/bin:/opt/conda/bin:$PATH
 
 RUN \
   # tools & required packages
