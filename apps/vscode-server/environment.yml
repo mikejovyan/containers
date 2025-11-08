@@ -32,7 +32,7 @@ dependencies:
   - py-xgboost-cpu
   # - pytables
   # - scikit-image
-  - scikit-learn=1.5.2
+  - scikit-learn=1.7.2
   # - scikit-learn-intelex
   - scipy
   - seaborn
