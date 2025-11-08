@@ -18,7 +18,7 @@ dependencies:
   - ipympl
   - ipywidgets
   - isort
-  - jupyter-ai
+  # - jupyter-ai
   - jupyterlab-git
   - jupyterlab_code_formatter
   - kaggle
