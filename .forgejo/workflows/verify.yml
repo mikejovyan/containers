@@ -1,0 +1,50 @@
+name: Verify image builds
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'images/**'
+
+concurrency:
+  group: ${{ forgejo.workflow }}-${{ forgejo.ref }}
+  cancel-in-progress: true
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      images: ${{ steps.changes.outputs.all_changed_files }}
+      any_changed: ${{ steps.changes.outputs.any_changed }}
+    steps:
+      - uses: https://data.forgejo.org/actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed images
+        id: changes
+        uses: https://data.forgejo.org/tj-actions/changed-files@v47
+        with:
+          files: images/**
+          dir_names: "true"
+          dir_names_max_depth: "2"
+          matrix: "true"
+
+  verify:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.any_changed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        image: ${{ fromJson(needs.detect-changes.outputs.images) }}
+    steps:
+      - uses: https://data.forgejo.org/actions/checkout@v7
+
+      - name: Build image
+        uses: ./.forgejo/actions/build-and-push
+        with:
+          context: ${{ matrix.image }}
+          platforms: linux/amd64
+          push: false

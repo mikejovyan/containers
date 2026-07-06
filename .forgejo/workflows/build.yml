@@ -1,0 +1,67 @@
+name: Build and push images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'images/**'
+
+concurrency:
+  group: ${{ forgejo.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      images: ${{ steps.changes.outputs.all_changed_files }}
+      any_changed: ${{ steps.changes.outputs.any_changed }}
+    steps:
+      - uses: https://data.forgejo.org/actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed images
+        id: changes
+        uses: https://data.forgejo.org/tj-actions/changed-files@v47
+        with:
+          files: images/**
+          dir_names: "true"
+          dir_names_max_depth: "2"
+          matrix: "true"
+
+  build-and-push:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.any_changed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        image: ${{ fromJson(needs.detect-changes.outputs.images) }}
+    steps:
+      - uses: https://data.forgejo.org/actions/checkout@v7
+
+      - name: Log in to registry
+        uses: https://data.forgejo.org/docker/login-action@v4
+        with:
+          registry: ${{ forgejo.server_url }}
+          username: ${{ forgejo.repository_owner }}
+          password: ${{ secrets.PACKAGE_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        run: |
+          img=$(basename "${{ matrix.image }}")
+          registry="${FORGEJO_SERVER_URL#https://}/${FORGEJO_REPOSITORY_OWNER}"
+          echo "name=$img" >> $FORGEJO_OUTPUT
+          echo "registry=$registry" >> $FORGEJO_OUTPUT
+
+      - name: Build and push
+        uses: ./.forgejo/actions/build-and-push
+        with:
+          context: ${{ matrix.image }}
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.registry }}/${{ steps.meta.outputs.name }}:latest

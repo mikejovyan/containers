@@ -1,0 +1,77 @@
+name: Build and push Docker images
+description: Build and push Docker images using docker build
+
+inputs:
+  context:
+    description: Build's context path
+    required: false
+    default: .
+  file:
+    description: Path to the Dockerfile
+    required: false
+  push:
+    description: Push image after build
+    required: false
+    default: 'false'
+  tags:
+    description: List of tags (one per line)
+    required: false
+  platforms:
+    description: List of target platforms for build
+    required: false
+  build-args:
+    description: List of build-time variables (one per line)
+    required: false
+  labels:
+    description: List of metadata for an image (one per line)
+    required: false
+  target:
+    description: Sets the target stage to build
+    required: false
+  no-cache:
+    description: Do not use cache when building the image
+    required: false
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Build
+      shell: bash
+      env:
+        INPUT_CONTEXT: ${{ inputs.context }}
+        INPUT_FILE: ${{ inputs.file }}
+        INPUT_TAGS: ${{ inputs.tags }}
+        INPUT_PLATFORMS: ${{ inputs.platforms }}
+        INPUT_BUILD_ARGS: ${{ inputs.build-args }}
+        INPUT_LABELS: ${{ inputs.labels }}
+        INPUT_TARGET: ${{ inputs.target }}
+        INPUT_NO_CACHE: ${{ inputs.no-cache }}
+      run: |
+        set -euo pipefail
+        args=()
+        if [ -n "$INPUT_PLATFORMS" ]; then args+=(--platform "$INPUT_PLATFORMS"); fi
+        if [ -n "$INPUT_FILE" ]; then args+=(-f "$INPUT_FILE"); fi
+        if [ "$INPUT_NO_CACHE" = "true" ]; then args+=(--no-cache); fi
+        if [ -n "$INPUT_TARGET" ]; then args+=(--target "$INPUT_TARGET"); fi
+        while IFS= read -r tag; do
+          if [ -n "$tag" ]; then args+=(-t "$tag"); fi
+        done <<< "$INPUT_TAGS"
+        while IFS= read -r arg; do
+          if [ -n "$arg" ]; then args+=(--build-arg "$arg"); fi
+        done <<< "$INPUT_BUILD_ARGS"
+        while IFS= read -r label; do
+          if [ -n "$label" ]; then args+=(--label "$label"); fi
+        done <<< "$INPUT_LABELS"
+        docker build "${args[@]}" "$INPUT_CONTEXT"
+
+    - name: Push
+      if: inputs.push == 'true'
+      shell: bash
+      env:
+        INPUT_TAGS: ${{ inputs.tags }}
+      run: |
+        set -euo pipefail
+        while IFS= read -r tag; do
+          if [ -n "$tag" ]; then docker push "$tag"; fi
+        done <<< "$INPUT_TAGS"
