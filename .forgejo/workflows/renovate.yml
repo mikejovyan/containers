@@ -16,7 +16,8 @@ jobs:
       - run: renovate
         env:
           LOG_LEVEL: "info"
-          RENOVATE_PLATFORM: forgejo
           RENOVATE_ENDPOINT: ${{ forgejo.server_url }}api/v1/
-          RENOVATE_TOKEN: ${{ secrets.RENOVATE_TOKEN }}
+          RENOVATE_PLATFORM: forgejo
           RENOVATE_REPOSITORIES: '["${{ forgejo.repository }}"]'
+          RENOVATE_TOKEN: ${{ secrets.RENOVATE_TOKEN }}
+          GITHUB_COM_TOKEN: ${{ secrets.RENOVATE_GITHUB_TOKEN }}
