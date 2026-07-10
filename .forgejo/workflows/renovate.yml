@@ -1,0 +1,22 @@
+name: renovate
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  renovate:
+    runs-on: ubuntu-latest
+    container: ghcr.io/renovatebot/renovate:latest
+    steps:
+      - uses: https://data.forgejo.org/actions/checkout@v7
+        with:
+          persist-credentials: false
+      - run: renovate
+        env:
+          LOG_LEVEL: "info"
+          RENOVATE_PLATFORM: forgejo
+          RENOVATE_ENDPOINT: ${{ forgejo.server_url }}api/v1/
+          RENOVATE_TOKEN: ${{ secrets.RENOVATE_TOKEN }}
+          RENOVATE_REPOSITORIES: '["${{ forgejo.repository }}"]'
