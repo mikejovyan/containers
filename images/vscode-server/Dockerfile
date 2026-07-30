@@ -42,7 +42,7 @@ RUN \
   wget --no-hsts --quiet -O- "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz" \
     | tar -xz --wildcards --strip-components=2 -C /usr/local/bin '*/bin/gh'
 
-COPY --from=ghcr.io/prefix-dev/pixi:0.74.0 /usr/local/bin/pixi /usr/local/bin/pixi
+COPY --from=ghcr.io/prefix-dev/pixi:0.75.0 /usr/local/bin/pixi /usr/local/bin/pixi
 COPY --from=ghcr.io/astral-sh/uv:0.12.0 /uv /uvx /usr/local/bin/
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
