@@ -31,7 +31,7 @@ RUN \
   && echo "${APP_USER} ALL=(ALL) NOPASSWD:ALL" | install -m 0440 /dev/stdin /etc/sudoers.d/nopasswd
 
 # renovate: depName=microsoft/vscode datasource=github-releases
-ARG CODE_VERSION=1.132.0
+ARG CODE_VERSION=1.132.1
 RUN \
   wget --no-hsts --quiet -O- "https://update.code.visualstudio.com/${CODE_VERSION}/cli-linux-x64/stable" \
     | tar -xz -C /usr/local/bin
