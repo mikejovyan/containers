@@ -43,7 +43,7 @@ RUN \
     | tar -xz --wildcards --strip-components=2 -C /usr/local/bin '*/bin/gh'
 
 COPY --from=ghcr.io/prefix-dev/pixi:0.76.2 /usr/local/bin/pixi /usr/local/bin/pixi
-COPY --from=ghcr.io/astral-sh/uv:0.12.3 /uv /uvx /usr/local/bin/
+COPY --from=ghcr.io/astral-sh/uv:0.12.4 /uv /uvx /usr/local/bin/
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
