@@ -37,7 +37,7 @@ RUN \
     | tar -xz -C /usr/local/bin
 
 # renovate: depName=cli/cli datasource=github-releases
-ARG GH_VERSION=2.98.0
+ARG GH_VERSION=2.99.0
 RUN \
   wget --no-hsts --quiet -O- "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz" \
     | tar -xz --wildcards --strip-components=2 -C /usr/local/bin '*/bin/gh'
