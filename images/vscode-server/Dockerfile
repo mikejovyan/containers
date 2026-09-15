@@ -14,6 +14,8 @@ RUN \
     git \
     jq \
     openssh-client \
+    python3 \
+    python3-ipykernel \
     rsync \
     sudo \
     tini \
