@@ -1,5 +1,8 @@
 {
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
-  assignees: ["mikejovyan"],
-  extends: ["local>renovate-bot/renovate_config", "customManagers:dockerfileVersions"],
+  assignees: [ "mikejovyan" ],
+  extends: [
+    "local>renovate-bot/renovate_config",
+    "customManagers:dockerfileVersions",
+  ],
 }
