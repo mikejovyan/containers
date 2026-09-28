@@ -1,0 +1,65 @@
+name: Build and push images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .forgejo/workflows/build.yml
+      - 'images/**'
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ forgejo.workflow }}-${{ forgejo.ref }}
+  cancel-in-progress: ${{ forgejo.event_name == 'pull_request' }}
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      # "none" keeps the matrix non-empty, so build-and-push always reports a status
+      images: ${{ steps.filter.outputs.changes == '[]' && '["none"]' || steps.filter.outputs.changes }}
+    steps:
+      - uses: https://data.forgejo.org/actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+
+      - id: filter
+        uses: https://github.com/dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4
+        with:
+          base: ${{ forgejo.event_name == 'push' && forgejo.ref || '' }}
+          filters: |
+            vscode-server:
+              - 'images/vscode-server/**'
+              - '.forgejo/workflows/build.yml'
+
+  build-and-push:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      IMAGE: ${{ vars.REGISTRY }}/${{ forgejo.repository_owner }}/${{ matrix.image }}
+    strategy:
+      matrix:
+        image: ${{ fromJson(needs.detect-changes.outputs.images) }}
+    steps:
+      - name: Log in to registry
+        if: matrix.image != 'none' && forgejo.event_name == 'push'
+        uses: https://data.forgejo.org/docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          registry: ${{ forgejo.server_url }}
+          username: ${{ forgejo.repository_owner }}
+          password: ${{ secrets.PACKAGE_TOKEN }}
+
+      - name: Build and push
+        if: matrix.image != 'none'
+        uses: https://data.forgejo.org/docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        with:
+          context: "{{defaultContext}}:images/${{ matrix.image }}"
+          platforms: linux/amd64
+          push: ${{ forgejo.event_name == 'push' }}
+          provenance: false
+          sbom: false
+          tags: ${{ env.IMAGE }}:latest
