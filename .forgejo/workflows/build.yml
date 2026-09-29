@@ -32,6 +32,9 @@ jobs:
             vscode-server:
               - 'images/vscode-server/**'
               - '.forgejo/workflows/build.yml'
+            forgejo-runner-dind:
+              - 'images/forgejo-runner-dind/**'
+              - '.forgejo/workflows/build.yml'
 
   build-and-push:
     needs: detect-changes
