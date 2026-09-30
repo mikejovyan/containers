@@ -2,7 +2,7 @@ FROM ubuntu:26.04@sha256:da6fc2be547864451aa253836dd926da33623312df4a9a243e35dc8
 
 ARG APP_USER=coder
 # renovate: datasource=github-releases depName=microsoft/vscode
-ARG CODE_VERSION=1.139.1
+ARG CODE_VERSION=1.140.0
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
