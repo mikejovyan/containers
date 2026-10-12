@@ -18,7 +18,6 @@ RUN apt-get update \
         libgomp1 \
         openssh-client \
         python3 \
-        python3-ipykernel \
         rsync \
         sudo \
         tini \
