@@ -2,7 +2,7 @@ FROM ubuntu:26.04@sha256:f144425ff09be612d6d9ad965196e9cdc23dae1f42110a8a11a3e9a
 
 ARG APP_USER=coder
 # renovate: datasource=github-releases depName=microsoft/vscode
-ARG CODE_VERSION=1.141.0
+ARG CODE_VERSION=1.141.1
 ARG TARGETARCH
 
 ENV DEBIAN_FRONTEND=noninteractive
