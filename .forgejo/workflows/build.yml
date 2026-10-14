@@ -35,6 +35,9 @@ jobs:
             forgejo-runner-dind:
               - 'images/forgejo-runner-dind/**'
               - '.forgejo/workflows/build.yml'
+            forgejo-ntfy-bridge:
+              - 'images/forgejo-ntfy-bridge/**'
+              - '.forgejo/workflows/build.yml'
 
   build-and-push:
     needs: detect-changes
