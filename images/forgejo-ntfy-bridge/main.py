@@ -55,19 +55,31 @@ def event_allowed(filters, event_type, data):
     return False
 
 
+def dig(data, *path):
+    # Walks a dotted path through nested dicts, stopping (returning None) at
+    # the first segment that isn't a dict. The final value is returned
+    # as-is, unchecked - callers decide what type they expect from it.
+    cur = data
+    for seg in path:
+        if not isinstance(cur, dict):
+            return None
+        cur = cur.get(seg)
+    return cur
+
+
+def dig_str(data, *path):
+    value = dig(data, *path)
+    return value if isinstance(value, str) else ""
+
+
 def strip_field(data, path):
     # Deletes the field at a dotted path (e.g. "pull_request.base.repo")
     # from data, if present. A missing path, or one that doesn't resolve to
     # nested objects, is silently a no-op rather than an error.
-    segments = path.split(".")
-    cur = data
-    for seg in segments[:-1]:
-        nxt = cur.get(seg) if isinstance(cur, dict) else None
-        if not isinstance(nxt, dict):
-            return
-        cur = nxt
-    if isinstance(cur, dict):
-        cur.pop(segments[-1], None)
+    *parents, last = path.split(".")
+    parent = dig(data, *parents)
+    if isinstance(parent, dict):
+        parent.pop(last, None)
 
 
 def payload_branch(data):
@@ -76,12 +88,10 @@ def payload_branch(data):
     # (push/create/delete), the ref with its "refs/heads/" prefix stripped.
     # Returns "" if the payload has no associated branch at all (e.g. an
     # issue), matching Forgejo's own "branch filter has no effect" comment.
-    pr = data.get("pull_request")
-    if isinstance(pr, dict):
-        base = pr.get("base")
-        if isinstance(base, dict) and isinstance(base.get("ref"), str):
-            return base["ref"]
-    ref = data.get("ref")
+    base_ref = dig(data, "pull_request", "base", "ref")
+    if isinstance(base_ref, str):
+        return base_ref
+    ref = dig(data, "ref")
     prefix = "refs/heads/"
     if isinstance(ref, str) and ref.startswith(prefix):
         return ref[len(prefix) :]
@@ -127,6 +137,10 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(message.encode())
 
+    def _drop(self, event, reason):
+        print(f'dropping event "{event}": {reason}')
+        self._no_content()
+
     def do_GET(self):
         if self.path == "/healthz":
             self.send_response(200)
@@ -166,48 +180,38 @@ class Handler(BaseHTTPRequestHandler):
 
             if data is None:
                 if needs_valid_json:
-                    print(f'dropping event "{event}": payload not valid JSON')
-                    self._no_content()
+                    self._drop(event, "payload not valid JSON")
                     return
             else:
                 if not event_allowed(ALLOWED_EVENTS, event, data):
-                    print(f'dropping event "{event}": not in NTFY_ALLOWED_EVENTS')
-                    self._no_content()
+                    self._drop(event, "not in NTFY_ALLOWED_EVENTS")
                     return
 
                 branch = payload_branch(data)
                 if branch and not branch_matches(BRANCH_FILTER, branch):
-                    print(
-                        f'dropping event "{event}": branch "{branch}" '
-                        f'doesn\'t match NTFY_BRANCH_FILTER "{BRANCH_FILTER}"'
+                    self._drop(
+                        event,
+                        f'branch "{branch}" doesn\'t match '
+                        f'NTFY_BRANCH_FILTER "{BRANCH_FILTER}"',
                     )
-                    self._no_content()
                     return
 
-                sender = data.get("sender")
-                login = sender.get("login") if isinstance(sender, dict) else None
-                login = login if isinstance(login, str) else ""
+                login = dig_str(data, "sender", "login")
                 if not list_allowed(ALLOWED_USERS, IGNORED_USERS, login):
-                    print(
-                        f'dropping event "{event}": sender "{login}" filtered '
-                        f"by NTFY_ALLOWED_USERS/NTFY_IGNORED_USERS"
+                    self._drop(
+                        event,
+                        f'sender "{login}" filtered by '
+                        f"NTFY_ALLOWED_USERS/NTFY_IGNORED_USERS",
                     )
-                    self._no_content()
                     return
 
-                repo = data.get("repository")
-                repo_full_name = (
-                    repo.get("full_name") if isinstance(repo, dict) else None
-                )
-                repo_full_name = (
-                    repo_full_name if isinstance(repo_full_name, str) else ""
-                )
+                repo_full_name = dig_str(data, "repository", "full_name")
                 if not list_allowed(ALLOWED_REPOS, IGNORED_REPOS, repo_full_name):
-                    print(
-                        f'dropping event "{event}": repository "{repo_full_name}" '
-                        f"filtered by NTFY_ALLOWED_REPOS/NTFY_IGNORED_REPOS"
+                    self._drop(
+                        event,
+                        f'repository "{repo_full_name}" filtered by '
+                        f"NTFY_ALLOWED_REPOS/NTFY_IGNORED_REPOS",
                     )
-                    self._no_content()
                     return
 
                 for path in STRIP_FIELDS:
