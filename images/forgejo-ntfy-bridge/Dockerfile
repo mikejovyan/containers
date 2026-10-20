@@ -1,4 +1,6 @@
-FROM docker.io/library/python:3.15-slim@sha256:2da676046630d7bf14c6764ae1143dc7fa0377a53f94bf5a642f0b214aca5bce
+# syntax=docker/dockerfile:1
+FROM gcr.io/distroless/python3-debian12:nonroot@sha256:7d1042ce588ab97019fe95c24ffca7bc5a82ccdac572511d5e09bda4435c89c5
+
 COPY main.py /main.py
 
 ENTRYPOINT ["python3", "/main.py"]
