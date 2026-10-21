@@ -4,42 +4,54 @@ FROM ghcr.io/prefix-dev/pixi:0.82.1@sha256:f83a5fc6d1bb9a2ced27faf2b26c04c5eb618
 FROM ghcr.io/astral-sh/uv:0.13.4@sha256:9f130421e930bfbdc563c00740466603f8723158e90297d07957c2294640262b AS uv
 FROM ubuntu:26.04@sha256:c098726dd9b9733f3e885f8de0ef375206a311b0a317eadc40d347b1115fb944
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 ARG APP_USER=coder
+ARG APP_UID=1000
+ARG APP_GID=1000
 # renovate: datasource=github-releases depName=microsoft/vscode
-ARG CODE_VERSION=1.142.0
+ARG APP_VERSION=1.142.0
 ARG TARGETARCH
 
 ENV DEBIAN_FRONTEND=noninteractive
-ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
+ENV USER=${APP_USER}
 
 RUN apt-get update \
     && apt-get install --no-install-recommends --yes \
         ca-certificates \
+        catatonit \
         curl \
         gh \
         git \
+        git-lfs \
         jq \
         libgomp1 \
+        locales \
         openssh-client \
         python3 \
         rsync \
         sudo \
-        tini \
         tzdata \
         unzip \
         wget \
+    && git lfs install \
     && rm -rf /var/lib/apt/lists/*
 
+RUN sed -i "s/# en_US.UTF-8/en_US.UTF-8/" /etc/locale.gen \
+    && locale-gen
+ENV LANG=en_US.UTF-8
+
 RUN userdel -r ubuntu \
+    && groupadd --gid=${APP_GID} ${APP_USER} \
     && useradd ${APP_USER} \
         --create-home \
+        --gid=${APP_GID} \
         --shell=/bin/bash \
-        --uid=1000 \
+        --uid=${APP_UID} \
     && echo "${APP_USER} ALL=(ALL) NOPASSWD:ALL" | install -m 0440 /dev/stdin /etc/sudoers.d/nopasswd
 
-RUN VSCODE_ARCH="$TARGETARCH"; [ "$VSCODE_ARCH" = amd64 ] && VSCODE_ARCH=x64; \
-    wget --no-hsts --quiet -O- "https://update.code.visualstudio.com/${CODE_VERSION}/cli-linux-${VSCODE_ARCH}/stable" \
-    | tar -xz -C /usr/local/bin
+RUN --mount=type=bind,source=install-vscode-cli.sh,target=/install-vscode-cli.sh \
+    sh /install-vscode-cli.sh "$TARGETARCH" "$APP_VERSION"
 
 COPY --from=fj /usr/local/bin/fj /usr/local/bin/fj
 COPY --from=pixi /usr/local/bin/pixi /usr/local/bin/pixi
@@ -48,5 +60,7 @@ COPY --from=uv /uv /uvx /usr/local/bin/
 COPY --chmod=755 entrypoint.sh /usr/local/bin/entrypoint.sh
 
 USER ${APP_USER}
+WORKDIR /home/${APP_USER}
 
-ENTRYPOINT ["tini", "--", "/usr/local/bin/entrypoint.sh"]
+EXPOSE 8000
+ENTRYPOINT ["catatonit", "--", "/usr/local/bin/entrypoint.sh"]
