@@ -3,6 +3,16 @@ set -e
 
 echo "[entrypoint] Starting VS Code CLI container"
 
+# give an unrecognized uid (e.g. --user <uid>:0) a resolvable username
+if ! whoami >/dev/null 2>&1; then
+	if [ -w /etc/passwd ]; then
+		echo "[entrypoint] no /etc/passwd entry for uid $(id -u); adding one"
+		echo "${APP_USER}:x:$(id -u):$(id -g):,,,:${HOME}:/bin/bash" >>/etc/passwd
+	else
+		echo "[entrypoint] warning: no /etc/passwd entry for uid $(id -u) and /etc/passwd isn't writable - try --user <uid>:0" >&2
+	fi
+fi
+
 set -- code serve-web --host "${HOST:-0.0.0.0}"
 
 [ -n "$SOCKET_PATH" ] && set -- "$@" --socket-path "$SOCKET_PATH"
@@ -32,14 +42,20 @@ set -- "$@" --commit-id "$(code --version | grep -oE '[a-f0-9]{40}')"
 
 [ -n "$LOG_LEVEL" ] && set -- "$@" --log "$LOG_LEVEL"
 
+# a failing hook shouldn't block startup - log it and keep going
+set +e
 for f in "$HOME/.app-start"/*.sh; do
-  [ -f "$f" ] || continue
-  echo "[entrypoint] sourcing ${f##*/}"
-  . "$f"
+	[ -f "$f" ] || continue
+	echo "[entrypoint] sourcing ${f##*/}"
+	. "$f"
+	hook_rc=$?
+	[ "$hook_rc" -ne 0 ] && echo "[entrypoint] ${f##*/} failed (exit $hook_rc), continuing" >&2
 done
+set -e
+unset hook_rc
 
 unset HOST SOCKET_PATH PORT TOKEN TOKEN_FILE SERVER_BASE_PATH SERVER_DATA_DIR \
-  DEFAULT_FOLDER DEFAULT_WORKSPACE DISABLE_TELEMETRY CLI_DATA_DIR VERBOSE LOG_LEVEL
+	DEFAULT_FOLDER DEFAULT_WORKSPACE DISABLE_TELEMETRY CLI_DATA_DIR VERBOSE LOG_LEVEL
 
 echo "Executing: $*"
 exec "$@"
