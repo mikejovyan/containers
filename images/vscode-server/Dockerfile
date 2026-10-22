@@ -71,7 +71,7 @@ RUN if id -un "${APP_UID}" >/dev/null 2>&1; then \
 ARG TARGETARCH
 
 RUN --mount=type=bind,source=install-vscode-cli.sh,target=/install-vscode-cli.sh \
-    sh /install-vscode-cli.sh "$TARGETARCH" "$APP_VERSION"
+    bash /install-vscode-cli.sh "$TARGETARCH" "$APP_VERSION"
 
 USER ${APP_UID}
 
