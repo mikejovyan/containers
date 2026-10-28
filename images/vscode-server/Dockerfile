@@ -12,7 +12,7 @@ ARG APP_USER="coder"
 ARG APP_UID="1000"
 ARG APP_GID="1000"
 # renovate: datasource=github-releases depName=microsoft/vscode
-ARG APP_VERSION=1.143.1
+ARG APP_VERSION=1.144.0
 
 USER root
 
