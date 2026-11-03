@@ -5,12 +5,20 @@ template engine does all the formatting, not this bridge."""
 
 import fnmatch
 import json
+import logging
 import os
 import sys
 import urllib.error
 import urllib.parse
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+logging.basicConfig(
+    stream=sys.stdout,
+    level=os.environ.get("LOG_LEVEL", "INFO").upper(),
+    format="%(levelname)s: %(message)s",
+)
+log = logging.getLogger("forgejo-ntfy-bridge")
 
 
 def split_csv(s):
@@ -126,7 +134,7 @@ IGNORED_REPOS = split_csv(os.environ.get("NTFY_IGNORED_REPOS", ""))
 
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
-        sys.stdout.write(f"{self.address_string()} - {format % args}\n")
+        log.info("%s - %s", self.address_string(), format % args)
 
     def _no_content(self):
         self.send_response(204)
@@ -138,7 +146,7 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(message.encode())
 
     def _drop(self, event, reason):
-        print(f'dropping event "{event}": {reason}')
+        log.debug('dropping event "%s": %s', event, reason)
         self._no_content()
 
     def do_GET(self):
@@ -235,12 +243,12 @@ class Handler(BaseHTTPRequestHandler):
             status = e.code
             resp_body = e.read()
         except urllib.error.URLError as e:
-            print(f"error publishing to ntfy: {e}")
+            log.error("error publishing to ntfy: %s", e)
             self._error(502, "failed to publish notification")
             return
 
         if status // 100 != 2:
-            print(f"ntfy returned {status}: {resp_body!r}")
+            log.error("ntfy returned %s: %r", status, resp_body)
             self._error(502, "failed to publish notification")
             return
 
@@ -250,7 +258,7 @@ class Handler(BaseHTTPRequestHandler):
 
 def main():
     server = ThreadingHTTPServer(("", int(NTFY_PORT)), Handler)
-    print(f"listening on :{NTFY_PORT}")
+    log.info("listening on :%s", NTFY_PORT)
     server.serve_forever()
 
 
