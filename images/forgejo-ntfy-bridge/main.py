@@ -15,7 +15,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 logging.basicConfig(
     stream=sys.stdout,
-    level=os.environ.get("LOG_LEVEL", "INFO").upper(),
+    level=os.environ.get("LOG_LEVEL", "WARNING").upper(),
     format="%(levelname)s: %(message)s",
 )
 log = logging.getLogger("forgejo-ntfy-bridge")
