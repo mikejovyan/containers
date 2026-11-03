@@ -126,7 +126,7 @@ IGNORED_REPOS = split_csv(os.environ.get("NTFY_IGNORED_REPOS", ""))
 
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
-        sys.stderr.write(f"{self.address_string()} - {format % args}\n")
+        sys.stdout.write(f"{self.address_string()} - {format % args}\n")
 
     def _no_content(self):
         self.send_response(204)
