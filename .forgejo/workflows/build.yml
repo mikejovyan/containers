@@ -29,11 +29,14 @@ jobs:
         with:
           base: ${{ forgejo.event_name == 'push' && forgejo.ref || '' }}
           filters: |
-            vscode-server:
-              - 'images/vscode-server/**'
-              - '.forgejo/workflows/build.yml'
             forgejo-runner-dind:
               - 'images/forgejo-runner-dind/**'
+              - '.forgejo/workflows/build.yml'
+            forgejo-runner-pinp:
+              - 'images/forgejo-runner-pinp/**'
+              - '.forgejo/workflows/build.yml'
+            vscode-server:
+              - 'images/vscode-server/**'
               - '.forgejo/workflows/build.yml'
 
   build-and-push:

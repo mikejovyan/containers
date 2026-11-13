@@ -5,4 +5,12 @@
     "local>renovate-bot/renovate_config",
     "customManagers:dockerfileVersions",
   ],
+  packageRules: [
+    {
+      description: "forgejo-runner-pinp pins aio to a known-good podman version (fixes a symlink-escape bug) -- still raise PRs, but never automerge",
+      matchFileNames: [ "images/forgejo-runner-pinp/Dockerfile" ],
+      matchPackageNames: [ "quay.io/containers/aio" ],
+      automerge: false,
+    },
+  ],
 }
