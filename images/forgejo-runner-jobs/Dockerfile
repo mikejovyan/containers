@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
 
-FROM docker.io/library/buildpack-deps:26.04@sha256:87381d756e4cff80c647b9d4505e2d4cc8f9dda482a9fdf362d099a571ba5933
+FROM docker.io/library/buildpack-deps:26.10@sha256:80f52ba2ecac89db7d06b4f97e1544b8e6b1d52ef0d7a07e9ff27fb6e1e27b5b
 
 RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get update \
