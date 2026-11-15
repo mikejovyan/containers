@@ -32,8 +32,8 @@ jobs:
             forgejo-runner-dind:
               - 'images/forgejo-runner-dind/**'
               - '.forgejo/workflows/build.yml'
-            forgejo-runner-pinp:
-              - 'images/forgejo-runner-pinp/**'
+            forgejo-runner-engine:
+              - 'images/forgejo-runner-engine/**'
               - '.forgejo/workflows/build.yml'
             vscode-server:
               - 'images/vscode-server/**'

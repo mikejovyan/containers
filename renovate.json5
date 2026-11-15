@@ -7,8 +7,7 @@
   ],
   packageRules: [
     {
-      description: "forgejo-runner-pinp pins podman/stable to a known-good version (fixes a symlink-escape bug) -- still raise PRs, but never automerge",
-      matchFileNames: [ "images/forgejo-runner-pinp/Dockerfile" ],
+      matchFileNames: [ "images/forgejo-runner-engine/Dockerfile" ],
       matchPackageNames: [ "quay.io/podman/stable" ],
       automerge: false,
     },
