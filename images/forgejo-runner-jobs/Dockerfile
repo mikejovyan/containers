@@ -1,5 +1,7 @@
 # syntax=docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
 
+FROM docker.io/library/node:lts-bookworm-slim@sha256:8261241c4197285eaeca819863dab5042cd1f9147b000670f4e773f4d5fe7768 AS node
+
 FROM docker.io/library/buildpack-deps:26.10@sha256:80f52ba2ecac89db7d06b4f97e1544b8e6b1d52ef0d7a07e9ff27fb6e1e27b5b
 
 RUN export DEBIAN_FRONTEND=noninteractive \
@@ -39,3 +41,5 @@ RUN mkdir -p /var/lib/shared/overlay-images \
     touch /var/lib/shared/vfs-layers/layers.lock
 
 ENV BUILDAH_ISOLATION=chroot
+
+COPY --from=node /usr/local/bin/node /usr/local/bin/node
