@@ -1,6 +1,8 @@
 # syntax=docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
 
 FROM docker.io/tonistiigi/binfmt:latest@sha256:400a4873b838d1b89194d982c45e5fb3cda4593fbfd7e08a02e76b03b21166f0 AS binfmt
+# unpin once 6.1.4 is available
+# https://github.com/podman-container-tools/podman/issues/29805
 FROM quay.io/podman/stable:v5.8.9@sha256:27987e61e28666a889ade2aaaa739f55219eb316a62beaa1f5678b80eecefbe6
 
 # needed or QEMU drops argv[0], breaking busybox dispatch
