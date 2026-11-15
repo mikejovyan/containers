@@ -35,6 +35,9 @@ jobs:
             forgejo-runner-engine:
               - 'images/forgejo-runner-engine/**'
               - '.forgejo/workflows/build.yml'
+            forgejo-runner-jobs:
+              - 'images/forgejo-runner-jobs/**'
+              - '.forgejo/workflows/build.yml'
             vscode-server:
               - 'images/vscode-server/**'
               - '.forgejo/workflows/build.yml'
