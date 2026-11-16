@@ -11,7 +11,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
         fuse-overlayfs \
         gettext-base \
         podman \
-    # check what this does
     && git config --system --add safe.directory '*' \
     && apt-get dist-clean \
     && rm -rf /var/cache/* /var/log/* /tmp/*
@@ -41,7 +40,5 @@ RUN mkdir -p /var/lib/shared/overlay-images \
     touch /var/lib/shared/overlay-layers/layers.lock && \
     touch /var/lib/shared/vfs-images/images.lock && \
     touch /var/lib/shared/vfs-layers/layers.lock
-
-ENV BUILDAH_ISOLATION=chroot
 
 COPY --from=node /usr/local/bin/node /usr/local/bin/node
