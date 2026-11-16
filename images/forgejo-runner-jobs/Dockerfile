@@ -9,7 +9,9 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get install --no-install-recommends --yes \
         buildah \
         fuse-overlayfs \
+        gettext-base \
         podman \
+    # check what this does
     && git config --system --add safe.directory '*' \
     && apt-get dist-clean \
     && rm -rf /var/cache/* /var/log/* /tmp/*
