@@ -29,9 +29,6 @@ jobs:
         with:
           base: ${{ forgejo.event_name == 'push' && forgejo.ref || '' }}
           filters: |
-            forgejo-runner-dind:
-              - 'images/forgejo-runner-dind/**'
-              - '.forgejo/workflows/build.yml'
             forgejo-runner-engine:
               - 'images/forgejo-runner-engine/**'
               - '.forgejo/workflows/build.yml'
@@ -48,27 +45,31 @@ jobs:
     permissions:
       contents: read
       packages: write
-    env:
-      IMAGE: ${{ vars.REGISTRY }}/${{ forgejo.repository_owner }}/${{ matrix.image }}
     strategy:
       matrix:
         image: ${{ fromJson(needs.detect-changes.outputs.images) }}
     steps:
-      - name: Log in to registry
-        if: matrix.image != 'none' && forgejo.event_name == 'push'
-        uses: https://data.forgejo.org/docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+      - uses: https://data.forgejo.org/actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: matrix.image != 'none'
+
+      - name: Build
+        if: matrix.image != 'none'
+        id: build
+        uses: https://data.forgejo.org/redhat-actions/buildah-build@719e3c40d8af9790c23eca13f7daa339f2867034 # v3
         with:
-          registry: ${{ forgejo.server_url }}
+          image: ${{ matrix.image }}
+          tags: latest
+          context: images/${{ matrix.image }}
+          containerfiles: images/${{ matrix.image }}/Containerfile
+          platforms: linux/amd64,linux/arm64
+          layers: true
+
+      - name: Push
+        if: matrix.image != 'none' && forgejo.event_name == 'push'
+        uses: https://data.forgejo.org/redhat-actions/push-to-registry@94ade333c38ecc0e60e94785125d9a52ca423b37 # v3
+        with:
+          image: ${{ steps.build.outputs.image }}
+          tags: ${{ steps.build.outputs.tags }}
+          registry: ${{ vars.REGISTRY }}/${{ forgejo.repository_owner }}
           username: ${{ forgejo.repository_owner }}
           password: ${{ secrets.PACKAGE_TOKEN }}
-
-      - name: Build and push
-        if: matrix.image != 'none'
-        uses: https://data.forgejo.org/docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
-        with:
-          context: "{{defaultContext}}:images/${{ matrix.image }}"
-          platforms: linux/amd64,linux/arm64
-          push: ${{ forgejo.event_name == 'push' }}
-          provenance: false
-          sbom: false
-          tags: ${{ env.IMAGE }}:latest
