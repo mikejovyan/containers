@@ -1,9 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
-ARCH="$1"
-VERSION="$2"
-DEST="${3:-/usr/local/bin}"
+ARCH="$TARGETARCH"
+VERSION="$APP_VERSION"
+DEST="${DEST:-/usr/local/bin}"
 
 case "$ARCH" in
 amd64) ARCH=x64 ;;
