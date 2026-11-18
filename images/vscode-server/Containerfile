@@ -7,8 +7,6 @@ FROM ubuntu:26.04@sha256:d66b366dac61b575bee2aef07e9c26e8070096fbe84a3d4d3eb0da0
 ARG APP_USER="coder"
 ARG APP_UID="1000"
 ARG APP_GID="1000"
-# renovate: datasource=github-releases depName=microsoft/vscode
-ARG APP_VERSION=1.147.0
 
 USER root
 
@@ -18,17 +16,9 @@ RUN export DEBIAN_FRONTEND=noninteractive \
         ca-certificates \
         catatonit \
         curl \
-        gh \
-        git \
-        git-lfs \
-        jq \
         libgomp1 \
         locales \
-        openssh-client \
-        python3 \
-        rsync \
         sudo \
-        unzip \
         wget \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
@@ -63,6 +53,23 @@ RUN if id -un "${APP_UID}" >/dev/null 2>&1; then \
     && mkdir -p "${HOME}/Projects" \
     && chown ${APP_USER}:${APP_GID} "${HOME}/Projects"
 
+RUN export DEBIAN_FRONTEND=noninteractive \
+    && apt-get update \
+    && apt-get install --no-install-recommends --yes \
+        ansible-core \
+        gh \
+        git \
+        git-lfs \
+        jq \
+        openssh-client \
+        python3 \
+        rsync \
+        unzip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# renovate: datasource=github-releases depName=microsoft/vscode
+ARG APP_VERSION=1.147.0
 ARG TARGETARCH
 
 RUN --mount=type=bind,source=install-vscode-cli.sh,target=/install-vscode-cli.sh \
