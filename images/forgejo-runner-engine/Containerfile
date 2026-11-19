@@ -4,6 +4,10 @@ FROM quay.io/podman/stable:v6.2.0@sha256:11b282dfb205faba51e71908860eccfe4322000
 # needed or QEMU drops argv[0], breaking busybox dispatch
 ENV QEMU_PRESERVE_ARGV0=1
 
+# pin crun 1.29.1
+# https://github.com/containers/crun/issues/2466
+RUN dnf downgrade -y crun-1.29.1 && dnf clean all
+
 COPY --from=binfmt /usr/bin/ /usr/bin/
 COPY --chmod=755 entrypoint.sh /usr/local/bin/binfmt-entrypoint.sh
 
