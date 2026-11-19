@@ -49,6 +49,12 @@ jobs:
       matrix:
         image: ${{ fromJson(needs.detect-changes.outputs.images) }}
     steps:
+      - name: Compute registry namespace
+        run: |
+          SERVER_URL="${{ forgejo.server_url }}"
+          REGISTRY="${SERVER_URL#*://}"
+          echo "REGISTRY_NAMESPACE=$REGISTRY/${{ forgejo.repository_owner }}" >> "$GITHUB_ENV"
+
       - uses: https://data.forgejo.org/actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: matrix.image != 'none'
 
@@ -70,6 +76,6 @@ jobs:
         with:
           image: ${{ steps.build.outputs.image }}
           tags: ${{ steps.build.outputs.tags }}
-          registry: ${{ vars.REGISTRY }}/${{ forgejo.repository_owner }}
+          registry: ${{ env.REGISTRY_NAMESPACE }}
           username: ${{ forgejo.repository_owner }}
           password: ${{ secrets.PACKAGE_TOKEN }}
