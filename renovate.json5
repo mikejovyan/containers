@@ -5,11 +5,4 @@
     "local>renovate-bot/renovate_config",
     "customManagers:dockerfileVersions",
   ],
-  packageRules: [
-    {
-      matchFileNames: [ "images/forgejo-runner-engine/Dockerfile" ],
-      matchPackageNames: [ "quay.io/podman/stable" ],
-      automerge: false,
-    },
-  ],
 }
