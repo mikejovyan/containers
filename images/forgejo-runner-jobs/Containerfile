@@ -1,6 +1,6 @@
 FROM docker.io/library/node:lts-bookworm-slim@sha256:5df79989ed685e09f0a98019db4cebfb22fb9df1a53c0161664a011f7ff6b0f1 AS node
 
-FROM docker.io/library/buildpack-deps:26.10@sha256:e21b1ca11d60b5de3b770ce7a5fde8c84915209e0c9088872e1e2d208a176b78
+FROM docker.io/library/buildpack-deps:26.10@sha256:6293c257b0fbcd30ba8142f7991d15f93228df6f4877a2ee141aee7281ba4ff8
 
 RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get update \
