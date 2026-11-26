@@ -29,6 +29,9 @@ jobs:
         with:
           base: ${{ forgejo.event_name == 'push' && forgejo.ref || '' }}
           filters: |
+            caddy:
+              - 'images/caddy/**'
+              - '.forgejo/workflows/build.yml'
             forgejo-runner-engine:
               - 'images/forgejo-runner-engine/**'
               - '.forgejo/workflows/build.yml'
@@ -67,7 +70,10 @@ jobs:
           tags: latest
           context: images/${{ matrix.image }}
           containerfiles: images/${{ matrix.image }}/Containerfile
-          platforms: linux/amd64,linux/arm64
+          # caddy only ever runs on the arm64 Pi; building amd64 too means
+          # compiling all of Caddy's Go module graph under qemu-x86_64
+          # emulation, which is dramatically slower than a native build
+          platforms: ${{ matrix.image == 'caddy' && 'linux/arm64' || 'linux/amd64,linux/arm64' }}
           layers: true
 
       - name: Push
