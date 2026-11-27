@@ -1,5 +1,5 @@
 FROM docker.io/tonistiigi/binfmt:latest@sha256:400a4873b838d1b89194d982c45e5fb3cda4593fbfd7e08a02e76b03b21166f0 AS binfmt
-FROM quay.io/podman/stable:v6.2.0@sha256:a02eea67f0ebb539679b938f58acf47a566fb8876e3223ce527fc725826556f0
+FROM quay.io/podman/stable:v6.2.0@sha256:6fc7e3c47e3f9f9552f8ae47467297f6e97b3cbb6149cea62b67a5dc65ca15da
 
 # needed or QEMU drops argv[0], breaking busybox dispatch
 ENV QEMU_PRESERVE_ARGV0=1
